@@ -1,4 +1,5 @@
-face-recognition
+cv2-utils
+pillow
 slack-bolt
 Flask>=1.1
 gunicorn>=20

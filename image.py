@@ -1,39 +1,59 @@
 from PIL import Image, ImageDraw
 import numpy as np
-import face_recognition
+import cv2
+from cv2utils import FaceCascade, EyeCascade, FaceDnn
 import requests
+
+class Not2EyesException(Exception):
+    pass
 
 def open_url(url, token):
     headers = {"Authorization": "Bearer %s"%(token)}
     return Image.open(requests.get(url, headers=headers, stream=True).raw)
 
-def face_features(image):
-    faces = face_recognition.face_landmarks(image)
+def find_face(image):
+    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
-    if len(faces) > 1: 
-        raise Exception # TODO: more than 1 person
-    else:
-        return faces[0]
+    face_detector = FaceDnn()
+    faces = face_detector.detect_faces(image)
+
+    if len(faces) != 1:
+        raise Exception("not 1 face")
+
+    return faces[0]
+
+def find_eyes(image, face):
+    [x,y,x_final,y_final] = face['box']
+    eye_detector = EyeCascade()
+    eyes = eye_detector.detect_eyes(image[y:y_final, x:x_final])
+    if len(eyes) != 2:
+        raise Not2EyesException("not 2 eyes")
+
+    return eyes
 
 def find_eye_center(eye):
-    x, y = zip(*eye)
-    center_x = sum(x) / len(x)
-    center_y = sum(y) / len(y)
-    eye_center = int(center_x), int(center_y) ###
+    center_x = (eye[0] + eye[2]) /2
+    center_y = (eye[1] + eye[3]) /2
+    eye_center = int(center_x), int(center_y)
 
     return eye_center
 
-def find_face_center(face):
-    left_eye_center,right_eye_center = find_eye_center(face['left_eye']), find_eye_center(face['right_eye'])
-    
-    x = int((left_eye_center[0] + right_eye_center[0]) / 2)
-    y = int((left_eye_center[1] + right_eye_center[1]) / 2)
+def find_face_center(eyes):
+    eye0_center = find_eye_center(eyes[0]['box'])
+    eye1_center = find_eye_center(eyes[1]['box'])
 
-    return x,y 
+    x = int((eye0_center[0] + eye1_center[0]) / 2)
+    y = int((eye0_center[1] + eye1_center[1]) / 2)
+    center = [x, y]
+    center[0]=  int(eye0_center[0])
+    return center
 
 def get_center(image):
-    sample_face = face_features(image)
-    center = find_face_center(sample_face)
+    face = find_face(image)
+
+    center_x = int((face['box'][0] + face['box'][2]) /2)
+    center_y = int((face['box'][1] + face['box'][3]) /2)
+    center = [center_x, center_y]
 
     return center
 
@@ -65,14 +85,13 @@ def mirror(image = None, image_path=None, save_path=None):
         image = Image.open(image_path)
     
     image_array = np.asarray(image)
-    print('find center')
+
     center = get_center(image_array)
 
     half = get_half_face(image, center)
     flipped = hflip_image(half)
     
     image = crop_or_expand(image, center[0])
-    print('flatten')
     flatten(image, flipped, box=(center[0],0))
 
     if save_path:
@@ -80,4 +99,6 @@ def mirror(image = None, image_path=None, save_path=None):
     return image
 
 if __name__ == "__main__":
-    mirror(IMAGE_PATH, SAVE_PATH)
+    IMAGE_PATH = 'dunya.jpg'
+    SAVE_PATH = 'out.jpg'
+    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH)

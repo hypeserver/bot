@@ -1,6 +1,5 @@
-import os, re
-# Use the package we installed
-from slack_bolt import App, Say
+import os
+from slack_bolt import App
 
 import image as im
 
@@ -14,7 +13,8 @@ app = App(
 )
 
 @app.event('file_shared')
-def file_shared(body, client, context, logger,  say: Say):
+def file_shared(body, client, context, logger):
+    print('file_shared')
     file_id = body["event"]["file_id"]
     file_info = client.files_info(file=file_id)
 
@@ -22,24 +22,31 @@ def file_shared(body, client, context, logger,  say: Say):
         return
 
     url = file_info['file']['url_private']
+    print('opening remote image')
     image = im.open_url(url, token)
+    print('mirroring image')
     mirrored = im.mirror(image)
     mirrored.save('/tmp/%s.jpg'%file_id)
-
-    event = body['event']
-
-    #botinfo = client.bots_info()
-    #channel_name = botinfo['bot']['name']
-    #channels = client.conversations_list(exclude_archived=True)
-    #for channel in channels:
-    #    if channel['name'] == channel_name:
-    #        break
-
+    print('image_saved')
     with open('/tmp/%s.jpg'%file_id, 'rb') as file_content:
         response = client.files_upload(file=file_content,
                 channels="sapsik"
             )
+    print(response)
 
-# Start your app
+
+from flask import Flask, request
+from slack_bolt.adapter.flask import SlackRequestHandler
+
+flask_app = Flask(__name__)
+handler = SlackRequestHandler(app)
+
+
+@flask_app.route("/slack/events", methods=["POST"])
+def slack_events():
+    return handler.handle(request)
+
+
+# Only for local debug
 if __name__ == "__main__":
-    app.start(port=int(os.environ.get("PORT", 3000)))
+    flask_app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))

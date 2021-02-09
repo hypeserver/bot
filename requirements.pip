@@ -1,8 +1,5 @@
-cv2-utils
-opencv-contrib-python
-numpy
-pillow
+
+git+https://github.com/yigitbey/cv2utils.git
 slack-bolt
-Flask>=1.1
-gunicorn>=20
 requests
+pillow

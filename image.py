@@ -85,13 +85,14 @@ def mirror(image = None, image_path=None, save_path=None):
         image = Image.open(image_path)
     
     image_array = np.asarray(image)
-
+    print('find center')
     center = get_center(image_array)
 
     half = get_half_face(image, center)
     flipped = hflip_image(half)
     
     image = crop_or_expand(image, center[0])
+    print('flatten')
     flatten(image, flipped, box=(center[0],0))
 
     if save_path:

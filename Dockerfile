@@ -8,4 +8,4 @@ ENV PYTHONUNBUFFERED True
 ADD *.py ./
 VOLUME [ "/tmp" ]
 
-ENTRYPOINT gunicorn --bind :$PORT --workers 1 --threads 2 --timeout 0 app:flask_app
+ENTRYPOINT python app.py

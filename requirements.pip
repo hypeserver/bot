@@ -1,6 +1,6 @@
 cv2-utils
-opencv-contrib-python==4.2.0.32
-numpy==1.18.1
+opencv-contrib-python
+numpy
 pillow
 slack-bolt
 Flask>=1.1

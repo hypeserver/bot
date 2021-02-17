@@ -1,7 +1,10 @@
 import os
+import datetime
+
 from slack_bolt import App
 
 import image as im
+from sheets import Sheet as pins_sheet
 
 token = os.environ.get("SLACK_BOT_TOKEN")
 secret = os.environ.get("SLACK_SIGNING_SECRET")
@@ -32,6 +35,23 @@ def file_shared(body, client, context, logger):
             channels="sapsik"
             )
 
+@app.event('pin_added')
+def pin_added(body, client, context, logger):
+    event = body['event']
+    channel_id = event['channel_id']
+    pinned_at = datetime.datetime.fromtimestamp(event['item']['created'])
+    pinned_at = pinned_at.strftime('%d/%m/%Y %H:%M:%S')
+    pinned_by = event['user']
+    pinned_by = client.users_info(user=event['user'])
+    message = event['item']['message']['text']
+    message_by = client.users_info(user=event['item']['message']['user'])
+    message_username = message_by['user']['profile']['display_name']
+    permalink = event['item']['message']['permalink']
+    message_type = event['item']['message']['type']
+
+    row = [pinned_at, message_username, message, permalink]
+
+    pins_sheet.append(row)
 
 # Start your app
 if __name__ == "__main__":

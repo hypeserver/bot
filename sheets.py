@@ -12,14 +12,10 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.write']
 SPREADSHEET_ID = '1OWugVxyFChKK20uqXT21mdLKeFkgGLPBslkiblWE-30'
 RANGE_NAME = 'Messages'
 
-row = ["dsa","dsa","dsa","dsa"]
-
 class Sheet():
     @classmethod
     def append(cls, row):
-        values = [
-            row,
-        ]
+        values = [row,]
         body = {
             'values': values
         }
@@ -33,4 +29,5 @@ class Sheet():
                                             .get('updatedCells')))
 
 if __name__ == '__main__':
+    row = ['test', 'test', 'test', 'test']
     Sheet.append(row)

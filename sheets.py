@@ -8,8 +8,7 @@ from google.auth.transport.requests import Request
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.write']
 
-# The ID and range of a sample spreadsheet.
-SPREADSHEET_ID = '1OWugVxyFChKK20uqXT21mdLKeFkgGLPBslkiblWE-30'
+token = os.environ.get("SPREADSHEET_ID")
 RANGE_NAME = 'Messages'
 
 class Sheet():

@@ -39,6 +39,7 @@ def file_shared(body, client, context, logger):
 def pin_added(body, client, context, logger):
     event = body['event']
     channel_id = event['channel_id']
+    channel_name = client.conversations_info(channel=channel_id)['channel']['name']
     pinned_at = datetime.datetime.fromtimestamp(event['item']['created'])
     pinned_at = pinned_at.strftime('%d/%m/%Y %H:%M:%S')
     pinned_by = event['user']
@@ -49,7 +50,7 @@ def pin_added(body, client, context, logger):
     permalink = event['item']['message']['permalink']
     message_type = event['item']['message']['type']
 
-    row = [pinned_at, message_username, message, permalink]
+    row = [pinned_at, channel_name, message_username, message, permalink]
 
     pins_sheet.append(row)
 

@@ -23,8 +23,8 @@ handler = SlackRequestHandler(app)
 def slack_events():
     return handler.handle(request)
 
-@app.middleware  # or app.use(log_request)
-def log_request(logger, body, next):
+@app.middleware 
+def break_retry(logger, body, next):
     retry = request.headers.environ.get('HTTP_X_SLACK_RETRY_NUM', 0)
     if not retry:
         return next()

@@ -16,7 +16,7 @@ app = App(
 
 @app.event('file_shared')
 def file_shared(body, client, context, logger):
-    print(client)
+    print(client.headers)
     file_id = body["event"]["file_id"]
     file_info = client.files_info(file=file_id)
 

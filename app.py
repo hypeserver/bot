@@ -7,7 +7,6 @@ from slack_bolt.adapter.flask import SlackRequestHandler
 
 import image as im
 from sheets import Sheet as pins_sheet
-
 token = os.environ.get("SLACK_BOT_TOKEN")
 secret = os.environ.get("SLACK_SIGNING_SECRET")
 
@@ -23,7 +22,7 @@ handler = SlackRequestHandler(app)
 def slack_events():
     return handler.handle(request)
 
-@app.middleware 
+@app.middleware
 def break_retry(logger, body, next):
     retry = request.headers.environ.get('HTTP_X_SLACK_RETRY_NUM', 0)
     if not retry:
@@ -32,11 +31,12 @@ def break_retry(logger, body, next):
 @app.event('file_shared')
 def file_shared(body, client, context, logger):
     context.ack()
-    
+
     file_id = body["event"]["file_id"]
     file_info = client.files_info(file=file_id)
 
-    if file_info['file']['filetype'] not in ['jpg']:
+    file_type = file_info['file']['filetype']
+    if file_type not in ['jpg', "png"]:
         return
 
     url = file_info['file']['url_private']
@@ -44,16 +44,17 @@ def file_shared(body, client, context, logger):
     image = im.open_url(url, token)
 
     mirrored = im.mirror(image)
-    mirrored.save('/tmp/%s.jpg'%file_id)
+    mirrored.save(f"/tmp/{file_id}.{file_type}")
 
-    with open('/tmp/%s.jpg'%file_id, 'rb') as file_content:
+    with open(f"/tmp/{file_id}.{file_type}", 'rb') as file_content:
         response = client.files_upload(
             file=file_content,
             channels="sapsik"
-            )
+        )
 
 @app.event('pin_added')
 def pin_added(body, client, context, logger):
+    context.ack()
     event = body['event']
     channel_id = event['channel_id']
     channel_name = client.conversations_info(channel=channel_id)['channel']['name']

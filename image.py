@@ -1,3 +1,4 @@
+import sys
 from PIL import Image, ImageDraw
 import numpy as np
 import cv2
@@ -83,14 +84,14 @@ def crop_or_expand(image, center_x):
 def mirror(image = None, image_path=None, save_path=None):
     if image_path:
         image = Image.open(image_path)
-    
+
     image_array = np.asarray(image)
     print('find center')
     center = get_center(image_array)
 
     half = get_half_face(image, center)
     flipped = hflip_image(half)
-    
+
     image = crop_or_expand(image, center[0])
     print('flatten')
     flatten(image, flipped, box=(center[0],0))
@@ -100,6 +101,6 @@ def mirror(image = None, image_path=None, save_path=None):
     return image
 
 if __name__ == "__main__":
-    IMAGE_PATH = 'dunya.jpg'
+    IMAGE_PATH = sys.argv[1]
     SAVE_PATH = 'out.jpg'
     mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH)

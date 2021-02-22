@@ -2,6 +2,8 @@ import os
 import datetime
 
 from slack_bolt import App
+from flask import Flask, request
+from slack_bolt.adapter.flask import SlackRequestHandler
 
 import image as im
 from sheets import Sheet as pins_sheet
@@ -11,12 +13,26 @@ secret = os.environ.get("SLACK_SIGNING_SECRET")
 
 app = App(
     token=token,
-    signing_secret=secret
+    signing_secret=secret,
+    process_before_response=True
 )
+flask_app = Flask(__name__)
+handler = SlackRequestHandler(app)
+
+@flask_app.route("/slack/events", methods=["POST"])
+def slack_events():
+    return handler.handle(request)
+
+@app.middleware  # or app.use(log_request)
+def log_request(logger, body, next):
+    retry = request.headers.environ.get('HTTP_X_SLACK_RETRY_NUM', 0)
+    if not retry:
+        return next()
 
 @app.event('file_shared')
 def file_shared(body, client, context, logger):
-    print(client.headers)
+    context.ack()
+    
     file_id = body["event"]["file_id"]
     file_info = client.files_info(file=file_id)
 
@@ -55,8 +71,7 @@ def pin_added(body, client, context, logger):
 
     pins_sheet.append(row)
 
-# Start your app
+# Only for local debug
 if __name__ == "__main__":
-    app.start(port=int(os.environ.get("PORT", 3000)))
-
+    flask_app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
 

@@ -2,6 +2,9 @@
 __*
 *.jpg
 .DS_Store
-env
+#env
+#sapsik.txt
 credentials.json
-sapsik.txt
+
+# Editor
+.vscode

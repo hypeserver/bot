@@ -1,5 +1,6 @@
 import os
 import datetime
+import re
 
 from slack_bolt import App
 from flask import Flask, request
@@ -71,6 +72,46 @@ def pin_added(body, client, context, logger):
     row = [pinned_at, channel_name, message_username, message, permalink]
 
     pins_sheet.append(row)
+
+@app.message("test")
+def handle_message(say, context):
+    # context.ack()
+    # event = body['event']
+    # channel_id = event['channel_id']
+    # channel_name = client.conversations_info(channel=channel_id)['channel']['name']
+    # pinned_at = datetime.datetime.fromtimestamp(event['item']['created'])
+    # pinned_at = pinned_at.strftime('%d/%m/%Y %H:%M:%S')
+    # pinned_by = event['user']
+    # pinned_by = client.users_info(user=event['user'])
+    # message = event['item']['message']['text']
+    # message_by = client.users_info(user=event['item']['message']['user'])
+    # message_username = message_by['user']['profile']['display_name']
+    # permalink = event['item']['message']['permalink']
+    # message_type = event['item']['message']['type']
+
+    # row = [pinned_at, channel_name, message_username, message, permalink]
+
+    # pins_sheet.append(row)
+    say("geldi")
+
+
+# @app.message(re.compile("<.*>"))
+# def handle_link(message, say, context):
+#     from pprint import pprint
+#     print(message['text'])
+#     # url, title = message.strip("<>").split("|")
+#     say(f"{message['text']} Bi link gordum sanki!")
+
+@app.message(re.compile("<.*>"))
+def say_hello_regex(say, context):
+    # regular expression matches are inside of context.matches
+    # for match in context['matches']:
+    #     url, title = match.strip("<>").split("|")
+    #     print(f"Got link {title}: url")
+    # print(context['matches'][0])
+    # say(f"Got {len(context['matches'])} links, ktxbye!")
+    greeting = context['matches'][0]
+    say(f"{greeting}, how are you?")
 
 # Only for local debug
 if __name__ == "__main__":

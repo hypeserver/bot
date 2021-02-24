@@ -1,31 +1,38 @@
 from __future__ import print_function
 import pickle
 import os.path
+import google.auth
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.write']
+SCOPES = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive',
+]
 
 SPREADSHEET_ID = os.environ.get("SPREADSHEET_ID")
-RANGE_NAME = 'Messages'
+
+ENV = os.environ.get("FLASK_ENV", "production")
+ENV_SHEET_MAP = {
+    "development": "links-dev",
+    "production": "links-main",
+}
+RANGE_NAME = ENV_SHEET_MAP[ENV]
+
+credentials, project = google.auth.load_credentials_from_file('credentials.json', scopes=SCOPES)
 
 class Sheet():
     @classmethod
     def append(cls, row):
+        service = build('sheets', 'v4', credentials=credentials)
         values = [row,]
         body = {
             'values': values
         }
-        service = build('sheets', 'v4')
+
         result = service.spreadsheets().values().append(
             spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME,
             valueInputOption='RAW', body=body).execute()
-            
-        print('{0} cells appended.'.format(result \
-                                            .get('updates') \
-                                            .get('updatedCells')))
 
 if __name__ == '__main__':
     row = ['test', 'test', 'test', 'test']

@@ -2,3 +2,6 @@
 __*
 *.jpg
 .DS_Store
+env
+credentials.json
+sapsik.txt

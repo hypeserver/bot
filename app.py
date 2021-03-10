@@ -2,21 +2,26 @@ import os
 import datetime
 
 from slack_bolt import App
+from utils.link_helper import collection_links
 from flask import Flask, request
 from slack_bolt.adapter.flask import SlackRequestHandler
 
 import image as im
 from sheets import Sheet as pins_sheet
-token = os.environ.get("SLACK_BOT_TOKEN")
-secret = os.environ.get("SLACK_SIGNING_SECRET")
+import config as cfg
 
 app = App(
-    token=token,
-    signing_secret=secret,
+    token=cfg.token,
+    signing_secret=cfg.secret,
     process_before_response=True
 )
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
+
+@flask_app.route("/tasks/link-collector", methods=["POST"])
+def collect_liks_view():
+    collection_links()
+    return {}
 
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
@@ -41,7 +46,7 @@ def file_shared(body, client, context, logger):
 
     url = file_info['file']['url_private']
 
-    image = im.open_url(url, token)
+    image = im.open_url(url, cfg.token)
 
     mirrored = im.mirror(image)
     mirrored.save(f"/tmp/{file_id}.{file_type}")

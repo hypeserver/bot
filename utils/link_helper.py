@@ -15,7 +15,7 @@ IS_BITINCE_KOMIKLIKLER_SAKALAR = [
     "Kuskusuz ki o {channel_name} kanalindaki {links_len} linki arsivleyendir",
     "Slack ucar, spreadsheet kalir, {links_len} linkinizi {channel_name}'ten corladim",
     "{channel_name}'e {links_len} link aticaginiza biraz calisin be, valla biktim",
-    "Mesajlariniz hepsi komikli degil, bu da onlardan biri. {channel_name}'ten {links_len} link, allah bereket versin!"
+    "Mesajlarimin hepsi komikli degil, bu da onlardan biri. {channel_name}'ten {links_len} link, allah bereket versin!"
 ]
 
 def log(msg):

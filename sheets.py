@@ -13,16 +13,16 @@ RANGE_NAME = 'Messages'
 
 class Sheet():
     @classmethod
-    def append(cls, row):
+    def append(cls, row, subsheet=RANGE_NAME):
         values = [row,]
         body = {
             'values': values
         }
         service = build('sheets', 'v4')
         result = service.spreadsheets().values().append(
-            spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME,
+            spreadsheetId=SPREADSHEET_ID, range=subsheet,
             valueInputOption='RAW', body=body).execute()
-            
+
         print('{0} cells appended.'.format(result \
                                             .get('updates') \
                                             .get('updatedCells')))

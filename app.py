@@ -2,7 +2,7 @@ import os
 import datetime
 
 from slack_bolt import App
-from utils.link_helper import collection_links
+from utils.link_helper import collect_target_channel_links
 from flask import Flask, request
 from slack_bolt.adapter.flask import SlackRequestHandler
 
@@ -19,8 +19,8 @@ flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
 
 @flask_app.route("/tasks/link-collector", methods=["POST"])
-def collect_liks_view():
-    collection_links()
+def collect_links_view():
+    collect_target_channel_links()
     return {}
 
 @flask_app.route("/slack/events", methods=["POST"])

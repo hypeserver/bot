@@ -8,6 +8,7 @@ RUN pip install -r requirements.pip
 ENV PYTHONUNBUFFERED True
 
 ADD *.py ./
+ADD utils/ ./utils
 VOLUME [ "/tmp" ]
 
 RUN pip freeze

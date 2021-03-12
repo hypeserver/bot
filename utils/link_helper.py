@@ -48,6 +48,8 @@ def filter_link_messages(raw_messages, channel_id):
     for m_obj in raw_messages:
         if m_obj["type"] == "message" and "subtype" not in m_obj:
             attachments = m_obj.get("attachments")
+            link = None
+            title = None
             if attachments:
                 if isinstance(attachments, dict):
                     title = attachments["title"]
@@ -57,9 +59,8 @@ def filter_link_messages(raw_messages, channel_id):
                         if "title" in attch and "title_link" in attch:
                             title = attch["title"]
                             link = attch["title_link"]
-            else:
+            elif "blocks" in m_obj:
                 link = recursive_link_type_finder(m_obj["blocks"])
-                title = None
 
             if link:
                 msg_ts = m_obj["ts"]
@@ -88,9 +89,9 @@ def add_links_to_sheet(links, channel_name):
     return inserted_link_count
 
 
-def collection_links():
+def collect_target_channel_links():
     try:
-        # log("Hype Belediyesi is basinda! Hadi bugun ne bos linkler atmissiniz bakiyim")
+        log("Hype Belediyesi is basinda! Hadi bugun ne bos linkler atmissiniz bakiyim")
         convs = client.conversations_list()
         channels = convs.data["channels"]
         for channel in channels:
@@ -103,7 +104,7 @@ def collection_links():
                 if count:
                     log(random.choice(IS_BITINCE_KOMIKLIKLER_SAKALAR).format(channel_name=channel_name, links_len=count))
                 else:
-                    log("Yok bisey iste, iyi calisin aferin")
+                    log("Bisey yokmus, iyi calisin aferin")
     except SlackApiError as e:
         print(f"Got an error: {e.response['error']}")
         print(e.response)

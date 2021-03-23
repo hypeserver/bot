@@ -1,13 +1,10 @@
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
-import config as cfg
-from pprint import pprint
-from sheets import Sheet as pins_sheet
-from datetime import datetime
 import random
+from datetime import datetime
 
-client = WebClient(token=cfg.token)
+from slack_sdk.errors import SlackApiError
 
+from sheets import Sheet as pins_sheet
+from utils.client import client
 
 LINK_CURATE_CHANNELS_NAMES = ["linx"]
 
@@ -15,14 +12,17 @@ IS_BITINCE_KOMIKLIKLER_SAKALAR = [
     "Kuskusuz ki o {channel_name} kanalindaki {links_len} linki arsivleyendir",
     "Slack ucar, spreadsheet kalir, {links_len} linkinizi {channel_name}'ten corladim",
     "{channel_name}'e {links_len} link aticaginiza biraz calisin be, valla biktim",
-    "Mesajlarimin hepsi komikli degil, bu da onlardan biri. {channel_name}'ten {links_len} link, allah bereket versin!"
+    "Mesajlarimin hepsi komikli degil, bu da onlardan biri. {channel_name}'ten {links_len} link, allah bereket versin!",
 ]
 
+
 def log(msg):
-    client.chat_postMessage(channel='#bot_log', text=msg)
+    client.chat_postMessage(channel="#bot_log", text=msg)
+
 
 def mark_message(channel_id, msg_ts):
     client.reactions_add(name="eyes", channel=channel_id, timestamp=msg_ts)
+
 
 def recursive_link_type_finder(raw_blocks):
     if isinstance(raw_blocks, list):
@@ -72,6 +72,7 @@ def filter_link_messages(raw_messages, channel_id):
                 result.append((user_id, float(msg_ts), title, link))
     return result
 
+
 def add_links_to_sheet(links, channel_name):
     today_start = datetime.today().replace(minute=0, hour=0, second=0, microsecond=0)
     inserted_link_count = 0
@@ -82,8 +83,8 @@ def add_links_to_sheet(links, channel_name):
         if pinned_at > today_start:
             username = user_map.get(user_id)
             if not username:
-                username = user_map[user_id] = client.users_info(user=user_id)['user']['profile']['display_name']
-            pinned_at = pinned_at.strftime('%d/%m/%Y %H:%M:%S')
+                username = user_map[user_id] = client.users_info(user=user_id)["user"]["profile"]["display_name"]
+            pinned_at = pinned_at.strftime("%d/%m/%Y %H:%M:%S")
             pins_sheet.append([pinned_at, title, link, username], subsheet=channel_name)
             inserted_link_count += 1
     return inserted_link_count
@@ -102,7 +103,9 @@ def collect_target_channel_links():
                 links = filter_link_messages(channel_history.data["messages"], channel_id)
                 count = add_links_to_sheet(links, channel_name)
                 if count:
-                    log(random.choice(IS_BITINCE_KOMIKLIKLER_SAKALAR).format(channel_name=channel_name, links_len=count))
+                    log(
+                        random.choice(IS_BITINCE_KOMIKLIKLER_SAKALAR).format(channel_name=channel_name, links_len=count)
+                    )
                 else:
                     log("Bisey yokmus, iyi calisin aferin")
     except SlackApiError as e:

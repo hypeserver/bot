@@ -1,0 +1,48 @@
+# Must watch:
+# 🎵 The PEP 8 Song 🎵 : https://youtu.be/hgI0p1zf31k
+
+default_stages: [commit, push]
+repos:
+-   repo: https://github.com/PyCQA/bandit
+    rev: '1.6.2' # Update me!
+    hooks:
+    - id: bandit
+      args:
+        - --quiet
+        - --ini=.bandit
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+    - id: check-added-large-files
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.4
+    hooks:
+    -   id: flake8
+        args:
+          - --max-line-length=120
+          - --exclude=TYP001
+          # Ignore unused import errors for utils init file
+          - --per-file-ignores=__init__.py:F401
+          - --ignore=W191,C901,W503,E203,E266
+          - --exclude=.venv,.tox,env,venv
+          - --max-complexity=10
+-   repo: https://github.com/psf/black
+    rev: 20.8b1
+    hooks:
+      - id: black
+        args:
+          - -l120
+          - --exclude=/(\.eggs|\.git|\.hg|\.mypy||\.venv|_build|buck-out|build|dist)/
+          - .
+-   repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.5.4
+    hooks:
+      - id: isort
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v2.7.2
+    hooks:
+      - id: pyupgrade
+        args:
+          - --py38-plus

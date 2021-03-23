@@ -20,7 +20,7 @@ poetry install --dev
 ```
 
 ## Deploy
-Either create a PR to master 🤩 or just push to master ¯\_(ツ)_/¯  😂, Google Cloud Build handles the rest.
+Either create a PR to master 🤩 or just push to master ¯\\_(ツ)_/¯  😂, Google Cloud Build handles the rest.
 
 
 ## Features

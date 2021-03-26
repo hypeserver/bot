@@ -61,8 +61,10 @@ def file_shared(body, client, context, logger):
 
     msg = f"<{uploaded_files['right']}| ><{uploaded_files['left']}| >"
     sent = client.chat_postMessage(text=msg, channel='sapsik')
+
+    for side in sides:
     try:
-        client.reactions_add(channel='sapsik', timestamp=sent['ts'], name="floppy_disk")
+        client.reactions_add(channel='sapsik', timestamp=sent['ts'], name=f"point_{side}")
     except SlackApiError:
         pass
 

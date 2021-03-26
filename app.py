@@ -49,7 +49,7 @@ def file_shared(body, client, context, logger):
 
     image = im.open_url(url, cfg.token)
 
-    sides = ['right', 'left']
+    sides = ['left', 'right']
     uploaded_files = {}
     for side in sides:
         mirrored = im.mirror(image, side=side)

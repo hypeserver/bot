@@ -59,7 +59,8 @@ def file_shared(body, client, context, logger):
             result = client.files_upload(file=file_content)
             uploaded_files[side] = result['file']['permalink']
 
-    client.chat_postMessage(f"<{uploaded_files['right']}| ><{uploaded_files['left']}| >")
+    msg = f"<{uploaded_files['right']}| ><{uploaded_files['left']}| >"
+    client.chat_postMessage(text=msg, channel='sapsik')
 
 
 @app.event("pin_added")

@@ -63,10 +63,10 @@ def file_shared(body, client, context, logger):
     sent = client.chat_postMessage(text=msg, channel='sapsik')
 
     for side in sides:
-    try:
-        client.reactions_add(channel='sapsik', timestamp=sent['ts'], name=f"point_{side}")
-    except SlackApiError:
-        pass
+        try:
+            client.reactions_add(channel='sapsik', timestamp=sent['ts'], name=f"point_{side}")
+        except SlackApiError:
+            pass
 
 @app.event("pin_added")
 def pin_added(body, client, context, logger):

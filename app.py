@@ -49,11 +49,17 @@ def file_shared(body, client, context, logger):
 
     image = im.open_url(url, cfg.token)
 
-    mirrored = im.mirror(image)
-    mirrored.save(f"/tmp/{file_id}.{file_type}")
+    sides = ['right', 'left']
+    uploaded_files = {}
+    for side in sides:
+        mirrored = im.mirror(image, side=side)
+        mirrored.save(f"/tmp/{file_id}-{side}.{file_type}")
 
-    with open(f"/tmp/{file_id}.{file_type}", "rb") as file_content:
-        _ = client.files_upload(file=file_content, channels="sapsik")
+        with open(f"/tmp/{file_id}-{side}.{file_type}", "rb") as file_content:
+            result = client.files_upload(file=file_content)
+            uploaded_files[side] = result['file']['permalink']
+
+    client.chat_postMessage(f"<{uploaded_files['right']}| ><{uploaded_files['left']}| >")
 
 
 @app.event("pin_added")

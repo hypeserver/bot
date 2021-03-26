@@ -67,11 +67,14 @@ def get_center(image):
     return center
 
 
-def get_half_face(image, center):
+def get_half_face(image, center, side="right"):
     w, h = image.size
-    area = (0, 0, center[0], h)
-    right_half = image.crop(area)
-    return right_half
+    if side == "right":
+        area = (0, 0, center[0], h)
+    elif side == "left":
+        area = (center[0], 0, w, h)
+    half = image.crop(area)
+    return half
 
 
 def hflip_image(image):
@@ -82,39 +85,48 @@ def flatten(layer_1, layer_2, box):
     layer_1.paste(layer_2, box)
 
 
-def crop_or_expand(image, center_x):
+def crop_or_expand(image, center_x, side='right'):
     w, h = image.size
-    if w >= center_x * 2:
-        image = image.crop(box=(0, 0, center_x * 2, h))
+
+    if side == 'right':
+        face_width = center_x * 2
+    if side == 'left':
+        face_width = (w - center_x) *2
+
+    if w >= face_width:
+        image = image.crop(box=(w - face_width , 0, w, h))
     else:
-        new_image = Image.new(image.mode, size=(center_x * 2, h))
+        new_image = Image.new(image.mode, size=(face_width, h))
         new_image.paste(image)
         image = new_image
 
     return image
 
 
-def mirror(image=None, image_path=None, save_path=None):
+def mirror(image=None, image_path=None, save_path=None, side='right'):
     if image_path:
         image = Image.open(image_path)
 
     image_array = np.asarray(image)
-    print("find center")
     center = get_center(image_array)
 
-    half = get_half_face(image, center)
+    half = get_half_face(image, center, side)
     flipped = hflip_image(half)
 
-    image = crop_or_expand(image, center[0])
-    print("flatten")
-    flatten(image, flipped, box=(center[0], 0))
+    image = crop_or_expand(image, center[0], side)
+    if side == 'right':
+        box = (center[0], 0)
+    elif side == 'left':
+        box = (0,0)
+    flatten(image, flipped, box)
 
     if save_path:
-        image.save(save_path)
+        image.save(side + "_" + save_path)
     return image
 
 
 if __name__ == "__main__":
     IMAGE_PATH = sys.argv[1]
     SAVE_PATH = "out.jpg"
-    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH)
+    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH, side='right')
+    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH, side='left')

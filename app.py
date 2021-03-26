@@ -64,7 +64,7 @@ def file_shared(body, client, context, logger):
 
     for side in sides:
         try:
-            client.reactions_add(channel='sapsik', timestamp=sent['ts'], name=f"point_{side}")
+            client.reactions_add(channel=sent['channel'], timestamp=sent['ts'], name=f"point_{side}")
         except SlackApiError:
             pass
 

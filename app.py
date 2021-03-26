@@ -60,8 +60,11 @@ def file_shared(body, client, context, logger):
             uploaded_files[side] = result['file']['permalink']
 
     msg = f"<{uploaded_files['right']}| ><{uploaded_files['left']}| >"
-    client.chat_postMessage(text=msg, channel='sapsik')
-
+    sent = client.chat_postMessage(text=msg, channel='sapsik')
+    try:
+        client.reactions_add(channel='sapsik', timestamp=sent['ts'], name="floppy_disk")
+    except SlackApiError:
+        pass
 
 @app.event("pin_added")
 def pin_added(body, client, context, logger):

@@ -25,17 +25,19 @@ def find_face(image):
     if len(faces) != 1:
         raise Exception("not 1 face")
 
-    return faces[0]
+    return faces[0]["box"]
 
 
 def find_eyes(image, face):
-    [x, y, x_final, y_final] = face["box"]
+    [x, y, x_final, y_final] = face
+    x = 0 if x < 0 else x
+    y = 0 if y < 0 else y
     eye_detector = EyeCascade()
     eyes = eye_detector.detect_eyes(image[y:y_final, x:x_final])
-    if len(eyes) != 2:
+    if len(eyes) < 2:
         raise Not2EyesException("not 2 eyes")
 
-    return eyes
+    return eyes[:2]
 
 
 def find_eye_center(eye):
@@ -60,8 +62,8 @@ def find_face_center(eyes):
 def get_center(image):
     face = find_face(image)
 
-    center_x = int((face["box"][0] + face["box"][2]) / 2)
-    center_y = int((face["box"][1] + face["box"][3]) / 2)
+    center_x = int((face[0] + face[2]) / 2)
+    center_y = int((face[1] + face[3]) / 2)
     center = [center_x, center_y]
 
     return center
@@ -69,9 +71,9 @@ def get_center(image):
 
 def get_half_face(image, center, side="right"):
     w, h = image.size
-    if side == "right":
+    if side == "left":
         area = (0, 0, center[0], h)
-    elif side == "left":
+    elif side == "right":
         area = (center[0], 0, w, h)
     half = image.crop(area)
     return half
@@ -113,12 +115,13 @@ def mirror(image=None, image_path=None, save_path=None, side='right'):
     half = get_half_face(image, center, side)
     flipped = hflip_image(half)
 
-    image = crop_or_expand(image, center[0], side)
+    image = Image.new(image.mode, size=(half.size[0]*2, half.size[1]))
     if side == 'right':
-        box = (center[0], 0)
+        image.paste(flipped)
+        image.paste(half, box=(half.size[0], 0))
     elif side == 'left':
-        box = (0,0)
-    flatten(image, flipped, box)
+        image.paste(half)
+        image.paste(flipped, box=(half.size[0], 0))
 
     if save_path:
         image.save(side + "_" + save_path)

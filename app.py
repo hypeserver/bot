@@ -42,7 +42,7 @@ def file_shared(body, client, context, logger):
     file_info = client.files_info(file=file_id)
 
     file_type = file_info["file"]["filetype"]
-    if file_type not in ["jpg", "png"]:
+    if file_type not in ["jpg", "jpeg", "png"]:
         return
 
     url = file_info["file"]["url_private"]

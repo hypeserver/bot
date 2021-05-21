@@ -1,4 +1,5 @@
 .*/
+!.github/
 __*
 *.jpg
 .DS_Store

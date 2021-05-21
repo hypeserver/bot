@@ -5,8 +5,6 @@ jobs:
   Lint:
     strategy:
       fail-fast: true
-      matrix:
-        python-version: [3.8]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -14,69 +12,6 @@ jobs:
       - name: Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.8
       - name: Precommit
         uses: pre-commit/action@v2.0.0
-  Unittest:
-    strategy:
-      fail-fast: true
-      matrix:
-        python-version: [3.8]
-        redis-version: [6]
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14.x
-      - name: Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install libyaml
-        run: sudo apt install -y libyaml-dev
-      - name: Poetry
-        run: |
-          python -m ensurepip
-          python -m pip install --upgrade pip
-          python -m pip install poetry==1.1.4
-      - name: Poetry Cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/poetry.lock') }}
-      - name: Install dependencies
-        run: python -m poetry install
-      - name: Firebase
-        run: npm i -g firebase-tools
-      - name: Start Redis
-        uses: supercharge/redis-github-action@1.1.0
-        with:
-          redis-version: ${{ matrix.redis-version }}
-      - name: Decrypt & Extract
-        env:
-            ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-        run:  |
-          openssl enc -in secrets.tar.gz.enc -out secrets.tar.gz -d -aes256 -md md5 -k "$ENCRYPTION_KEY" &&
-          tar -xvzf secrets.tar.gz
-      - name: Start firestore
-        run: |
-          cd firestore/staging && firebase emulators:start &
-          sleep 1
-      - name: Start cloud storage
-        run: |
-          poetry run gcloud-storage-emulator start --port=9090 &
-          sleep 1
-      - name: Unit Tests
-        env:
-          ENV: unittest
-          FIRESTORE_EMULATOR_HOST: localhost:8080
-          STORAGE_EMULATOR_HOST: http://localhost:9090
-          GCP_PROJECT: dh-helpcenter-staging
-          GOOGLE_APPLICATION_CREDENTIALS: dh-helpcenter-staging.json
-        run: poetry run python -m coverage run --source dh_helpcenter/ -m pytest -W error::DeprecationWarning tests
-      - name: Coverage Report
-        # TODO: something like this https://github.com/marketplace/actions/pytest-coverage-commentator
-        run: poetry run python -m coverage report --fail-under=88 --precision=3

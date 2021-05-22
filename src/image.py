@@ -87,16 +87,16 @@ def flatten(layer_1, layer_2, box):
     layer_1.paste(layer_2, box)
 
 
-def crop_or_expand(image, center_x, side='right'):
+def crop_or_expand(image, center_x, side="right"):
     w, h = image.size
 
-    if side == 'right':
+    if side == "right":
         face_width = center_x * 2
-    if side == 'left':
-        face_width = (w - center_x) *2
+    if side == "left":
+        face_width = (w - center_x) * 2
 
     if w >= face_width:
-        image = image.crop(box=(w - face_width , 0, w, h))
+        image = image.crop(box=(w - face_width, 0, w, h))
     else:
         new_image = Image.new(image.mode, size=(face_width, h))
         new_image.paste(image)
@@ -105,7 +105,7 @@ def crop_or_expand(image, center_x, side='right'):
     return image
 
 
-def mirror(image=None, image_path=None, save_path=None, side='right'):
+def mirror(image=None, image_path=None, save_path=None, side="right"):
     if image_path:
         image = Image.open(image_path)
 
@@ -115,11 +115,11 @@ def mirror(image=None, image_path=None, save_path=None, side='right'):
     half = get_half_face(image, center, side)
     flipped = hflip_image(half)
 
-    image = Image.new(image.mode, size=(half.size[0]*2, half.size[1]))
-    if side == 'right':
+    image = Image.new(image.mode, size=(half.size[0] * 2, half.size[1]))
+    if side == "right":
         image.paste(flipped)
         image.paste(half, box=(half.size[0], 0))
-    elif side == 'left':
+    elif side == "left":
         image.paste(half)
         image.paste(flipped, box=(half.size[0], 0))
 
@@ -131,5 +131,5 @@ def mirror(image=None, image_path=None, save_path=None, side='right'):
 if __name__ == "__main__":
     IMAGE_PATH = sys.argv[1]
     SAVE_PATH = "out.jpg"
-    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH, side='right')
-    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH, side='left')
+    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH, side="right")
+    mirror(image_path=IMAGE_PATH, save_path=SAVE_PATH, side="left")

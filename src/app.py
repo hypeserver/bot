@@ -4,27 +4,20 @@ import os
 from flask import Flask, request
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
+from slack_sdk.errors import SlackApiError
+from slack_sdk.web.client import WebClient
 
 import config as cfg
 import image as im
 from sheets import Sheet as pins_sheet
-from utils.link_helper import collect_target_channel_links
+from utils.bolt_utils import channel_name_from_id
 from utils.mention_helper import handle_mention
+from views import root_bp
 
 app = App(token=cfg.token, signing_secret=cfg.secret, process_before_response=True)
 flask_app = Flask(__name__)
+flask_app.register_blueprint(root_bp)
 handler = SlackRequestHandler(app)
-
-
-@flask_app.route("/tasks/link-collector", methods=["POST"])
-def collect_links_view():
-    collect_target_channel_links()
-    return {}
-
-
-@flask_app.route("/slack/events", methods=["POST"])
-def slack_events():
-    return handler.handle(request)
 
 
 @app.middleware
@@ -34,10 +27,14 @@ def break_retry(logger, body, next):
         return next()
 
 
-@app.event("file_shared")
-def file_shared(body, client, context, logger):
-    context.ack()
+@flask_app.route("/slack/events", methods=["POST"])
+def slack_events():
+    return handler.handle(request)
 
+
+@app.event("file_shared")
+def file_shared(body, client: WebClient, context, logger):
+    context.ack()
     file_id = body["event"]["file_id"]
     file_info = client.files_info(file=file_id)
 
@@ -49,7 +46,7 @@ def file_shared(body, client, context, logger):
 
     image = im.open_url(url, cfg.token)
 
-    sides = ['left', 'right']
+    sides = ["left", "right"]
     uploaded_files = {}
     for side in sides:
         mirrored = im.mirror(image, side=side)
@@ -57,16 +54,22 @@ def file_shared(body, client, context, logger):
 
         with open(f"/tmp/{file_id}-{side}.{file_type}", "rb") as file_content:
             result = client.files_upload(file=file_content)
-            uploaded_files[side] = result['file']['permalink']
+            uploaded_files[side] = result["file"]["permalink"]
 
     msg = f"<{uploaded_files['right']}| ><{uploaded_files['left']}| >"
-    sent = client.chat_postMessage(text=msg, channel='sapsik')
 
+    channel_name = channel_name_from_id(body["event"]["channel_id"])
+    channel = "sapsik"
+    if channel_name == "bot_testing":
+        channel = channel_name
+
+    sent = client.chat_postMessage(text=msg, channel=channel)
     for side in sides:
         try:
-            client.reactions_add(channel=sent['channel'], timestamp=sent['ts'], name=f"point_{side}")
+            client.reactions_add(channel=sent["channel"], timestamp=sent["ts"], name=f"point_{side}")
         except SlackApiError:
             pass
+
 
 @app.event("pin_added")
 def pin_added(body, client, context, logger):
@@ -87,7 +90,7 @@ def pin_added(body, client, context, logger):
 
 
 @app.event("app_mention")
-def handle_mentions(event, client, say):  # async function
+def handle_mentions(event, client, say):
     channel = event["channel"]
     thread_ts = event["thread_ts"]
     thread = client.conversations_replies(ts=thread_ts, channel=channel)

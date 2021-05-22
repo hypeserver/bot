@@ -1,5 +1,3 @@
-import os.path
-
 from googleapiclient.discovery import build
 
 import config as cfg

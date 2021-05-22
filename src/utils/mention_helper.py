@@ -14,7 +14,8 @@ def handle_mention(mention_event, thread_content):
     raw_mention = mention_event["text"]
     words = raw_mention.split()
     for cmd, handler in COMMAND_HANDLERS.items():
-        if set(cmd) & set(words):
+        if detected_cmd := set(cmd) & set(words):
+            print(f" handling {detected_cmd}")
             handler(mention_event, thread_content)
 
 
@@ -39,7 +40,14 @@ def post_sheet(mention_event, thread_content):
     client.chat_postMessage(text=f"Hemen sizi sheetliyorum: {SHEET_LINK}", thread_ts=thread_ts, channel=channel)
 
 
+def ping_pong(mention_event, thread_content):
+    thread_ts = mention_event["thread_ts"]
+    channel = mention_event["channel"]
+    client.chat_postMessage(text="PONG", thread_ts=thread_ts, channel=channel)
+
+
 COMMAND_HANDLERS = {
     ("al", "gomcur", "kapakla", "yapistir"): message_saver,
     ("sheet", "shit", "sheetle"): post_sheet,
+    ("ping",): ping_pong,
 }

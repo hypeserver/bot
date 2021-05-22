@@ -3,3 +3,6 @@
 __*
 *.jpg
 .DS_Store
+
+.env
+.envrc

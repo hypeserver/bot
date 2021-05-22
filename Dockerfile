@@ -10,10 +10,9 @@ RUN poetry install --no-dev --no-interaction --no-ansi
 
 ENV PYTHONUNBUFFERED True
 
-ADD *.py ./
-ADD utils/ ./utils
+ADD src/ .
 VOLUME [ "/tmp" ]
 
 RUN pip freeze
 
-ENTRYPOINT gunicorn --bind :$PORT --workers 1 --threads 2 --timeout 0 app:flask_app
+ENTRYPOINT gunicorn --bind :$PORT --workers 1 --threads 2 --timeout 0 src.app:flask_app
